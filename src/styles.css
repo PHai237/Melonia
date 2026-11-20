@@ -1,0 +1,12 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: #111e23; color: #f0e9d5; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+.shell { width: min(1100px, 100%); padding: 22px 16px; margin: 0 auto; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 3px 0 16px; }
+h1 { font-size: clamp(19px, 3vw, 29px); line-height: 1.2; margin: 5px 0 0; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .18em; color: #a9d9bb; }
+.tag { border: 1px solid #536b60; color: #bbd9c6; border-radius: 99px; font-size: 12px; padding: 8px 12px; }
+#game { width: 100%; aspect-ratio: 16 / 9; background: #89b58e; border: 3px solid #49675b; border-radius: 10px; overflow: hidden; }
+#game canvas { display: block; width: 100%; height: 100%; }
+footer { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; color: #bdc9c4; padding: 17px 0; }
+kbd { font: inherit; background: #263940; color: white; border-radius: 5px; padding: 4px 7px; }
+@media (max-width: 600px) { .shell { padding: 10px 8px; } header { flex-wrap: wrap; } footer { gap: 10px; } }
