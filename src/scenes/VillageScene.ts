@@ -1,98 +1,260 @@
 import Phaser from 'phaser';
 import { WorldClock } from '../game/WorldClock';
+import { FishingSystem } from '../game/FishingSystem';
+import { Inventory } from '../game/Inventory';
+import { Player } from '../entities/Player';
+import { Npc } from '../entities/Npc';
+import { HudOverlay } from '../ui/HudOverlay';
+import { BUILDINGS, POND, SPAWN, ELIAS } from '../world/WorldLayout';
+import { SPRITE_DISPLAY } from '../assets/AssetManifest';
 
-type Controls = { up: Phaser.Input.Keyboard.Key; down: Phaser.Input.Keyboard.Key; left: Phaser.Input.Keyboard.Key; right: Phaser.Input.Keyboard.Key; interact: Phaser.Input.Keyboard.Key };
+// ---------------------------------------------------------------------------
+// Depth sorting constants
+// ---------------------------------------------------------------------------
+const DEPTH = {
+  GROUND:      0,
+  GROUND_DECOR:10,
+  OBJECTS:     20,   // static environment (buildings, trees) — their sprites
+                     // also receive dynamic depth from y-position
+  CHARACTERS:  100,  // base; actual depth = 100 + sprite.y / 10
+  FOREGROUND:  500,  // building roofs that occlude player when walking behind
+  HUD:         10000,
+} as const;
 
-/** Placeholder scene: validates camera, movement, collisions and E interactions only. */
+// ---------------------------------------------------------------------------
+// Elias dialogue lines
+// ---------------------------------------------------------------------------
+const ELIAS_DIALOGUE = [
+  { text: 'Elias: Chào buổi sáng! Làng Melonia chào đón bạn.' },
+  { text: 'Elias: Hồ câu cá ở phía đông. Hôm nay cá cắn nhiều lắm đấy.' },
+  { text: 'Elias: Tôi đang chờ chuyến hàng từ thung lũng. Quay lại sau nhé.' },
+  { text: 'Elias: Nếu cần gì cứ hỏi tôi. Tôi luôn ở đây từ sáng sớm đến xế chiều.' },
+];
+
+/** Main village scene — orchestrates all systems for the first playable demo. */
 export class VillageScene extends Phaser.Scene {
-  private player!: Phaser.GameObjects.Arc;
-  private controls!: Controls;
+  // --- Systems ---
+  private readonly worldClock = new WorldClock();
+  private readonly fishing = new FishingSystem();
+  private readonly inventory = new Inventory();
+
+  // --- Entities ---
+  private player!: Player;
+  private elias!: Npc;
+
+  // --- Physics ---
   private blockers!: Phaser.Physics.Arcade.StaticGroup;
-  private hint!: Phaser.GameObjects.Text;
-  private clockText!: Phaser.GameObjects.Text;
-  private readonly clock = new WorldClock();
-  private readonly speed = 185;
-  private readonly merchant = { x: 640, y: 400 };
+
+  // --- HUD ---
+  private hud!: HudOverlay;
+
+  // --- Input ---
+  private keys!: {
+    up: Phaser.Input.Keyboard.Key;
+    down: Phaser.Input.Keyboard.Key;
+    left: Phaser.Input.Keyboard.Key;
+    right: Phaser.Input.Keyboard.Key;
+    interact: Phaser.Input.Keyboard.Key;
+  };
+
+  // --- State ---
+  private nearElias = false;
+  private nearPond = false;
 
   constructor() { super('Village'); }
 
+  // ---------------------------------------------------------------------------
   create(): void {
-    const worldWidth = 1600;
-    const worldHeight = 1100;
+    const { worldWidth, worldHeight } = { worldWidth: 1600, worldHeight: 1100 };
+
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
     this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
 
-    // Background is temporary, drawn by code. All final artwork stays separate from logic.
-    const ground = this.add.graphics();
-    ground.fillStyle(0x93bc91, 1).fillRect(0, 0, worldWidth, worldHeight);
-    ground.fillStyle(0xdcca9e, 1).fillRoundedRect(320, 0, 165, worldHeight, 35);
-    ground.fillRoundedRect(0, 415, worldWidth, 135, 32);
-    ground.fillStyle(0x6ba7ab, 1).fillEllipse(1170, 790, 620, 420);
-    ground.lineStyle(14, 0xc9deab, 1).strokeEllipse(1170, 790, 620, 420);
+    // 1. Environment layers
+    this.buildGround(worldWidth, worldHeight);
+    this.buildEnvironment();
 
+    // 2. Physics blockers
     this.blockers = this.physics.add.staticGroup();
-    this.addBuilding(155, 175, 210, 175, 'Guild', 0x796b8b);
-    this.addBuilding(690, 175, 210, 175, 'Quán trọ', 0x9c785c);
-    this.addBuilding(985, 150, 170, 185, 'Xưởng', 0x8c806b);
-    this.addBuilding(150, 700, 240, 150, 'Nhà nhỏ', 0x738b77);
-    this.addDecoration(1110, 470, 'Hồ câu cá');
+    this.buildColliders();
 
-    const npc = this.add.circle(this.merchant.x, this.merchant.y, 19, 0x7c4665);
-    npc.setStrokeStyle(3, 0xf6e7c8);
-    this.add.text(this.merchant.x, this.merchant.y - 38, 'Elias · Thương nhân', {
-      fontFamily: 'sans-serif', fontSize: '17px', color: '#24353a', backgroundColor: '#e9e1c1', padding: { x: 7, y: 3 },
-    }).setOrigin(0.5);
+    // 3. Entities
+    this.player = new Player(this, SPAWN.x, SPAWN.y);
+    this.elias  = new Npc(this, ELIAS.x, ELIAS.y, 'elias-idle-0', 'Elias', ELIAS_DIALOGUE);
 
-    this.player = this.add.circle(425, 595, 16, 0xfcf4d3);
-    this.player.setStrokeStyle(4, 0x375363);
-    this.physics.add.existing(this.player);
-    const body = this.player.body as Phaser.Physics.Arcade.Body;
-    body.setCircle(16);
-    body.setCollideWorldBounds(true);
-    this.physics.add.collider(this.player, this.blockers);
+    // 4. Physics collisions
+    this.physics.add.collider(this.player.sprite, this.blockers);
+    this.physics.add.collider(this.elias.sprite,  this.blockers);
+    this.physics.add.collider(this.player.sprite, this.elias.sprite);
 
+    // 5. Camera
+    this.cameras.main.startFollow(this.player.sprite, true, 0.10, 0.10);
+
+    // 6. Input
     if (!this.input.keyboard) throw new Error('Keyboard unavailable');
-    this.controls = this.input.keyboard.addKeys({ up: 'W', down: 'S', left: 'A', right: 'D', interact: 'E' }) as Controls;
-    this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
+    this.keys = this.input.keyboard.addKeys({
+      up: 'W', down: 'S', left: 'A', right: 'D', interact: 'E',
+    }) as typeof this.keys;
 
-    this.hint = this.add.text(18, 490, 'Đi dạo bằng WASD · Gặp Elias để trò chuyện', {
-      fontFamily: 'sans-serif', fontSize: '17px', color: '#eaf6ef', backgroundColor: '#263d49', padding: { x: 13, y: 8 },
-    }).setScrollFactor(0).setDepth(1000);
-    this.clockText = this.add.text(940, 16, '', {
-      fontFamily: 'sans-serif', fontSize: '18px', color: '#edf4e7', backgroundColor: '#263d49', padding: { x: 12, y: 8 },
-    }).setScrollFactor(0).setDepth(1000).setOrigin(1, 0);
+    // 7. HUD
+    this.hud = new HudOverlay(this);
+    this.hud.setInventory([]);
+
+    // 8. Fishing state listener
+    this.fishing.onStateChange((state, result) => {
+      this.hud.setFishingState(state);
+      if (state === 'success' && result?.caught) {
+        this.inventory.add(result.itemKey);
+        this.hud.setInventory(this.inventory.getAll());
+      }
+    });
   }
 
+  // ---------------------------------------------------------------------------
   update(_time: number, delta: number): void {
-    this.clock.tick(delta);
-    const body = this.player.body as Phaser.Physics.Arcade.Body;
-    let vx = Number(this.controls.right.isDown) - Number(this.controls.left.isDown);
-    let vy = Number(this.controls.down.isDown) - Number(this.controls.up.isDown);
-    const magnitude = Math.hypot(vx, vy) || 1;
-    vx = vx / magnitude * this.speed;
-    vy = vy / magnitude * this.speed;
-    body.setVelocity(vx, vy);
-    const near = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.merchant.x, this.merchant.y) < 78;
-    if (near && Phaser.Input.Keyboard.JustDown(this.controls.interact)) {
-      this.hint.setText('Elias: Chào mừng đến thị trấn! (NPC hiện chỉ là bản thử.)');
-    } else if (!near) {
-      this.hint.setText('Đi dạo bằng WASD · Gặp Elias và nhấn E để trò chuyện');
+    this.worldClock.tick(delta);
+    this.hud.setClock(this.worldClock.label);
+
+    // Player movement
+    this.player.update(this.keys.up, this.keys.down, this.keys.left, this.keys.right);
+    this.elias.update();
+
+    // Proximity checks
+    this.nearElias = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y, this.elias.sprite.x, this.elias.sprite.y,
+    ) < 90;
+
+    this.nearPond = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y, POND.interactX, POND.interactY,
+    ) < 100;
+
+    // Interaction prompt
+    if (this.nearElias && !this.fishing.isActive) {
+      this.hud.setPrompt('Trò chuyện với Elias');
+    } else if (this.nearPond && !this.fishing.isActive) {
+      this.hud.setPrompt('Câu cá');
+    } else if (!this.fishing.isActive) {
+      this.hud.setPrompt(null);
     }
-    this.clockText.setText(this.clock.label);
+
+    // E key interactions
+    if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) {
+      this.handleInteract();
+    }
   }
 
-  private addBuilding(x: number, y: number, w: number, h: number, title: string, color: number): void {
-    this.add.rectangle(x + 5, y + 12, w, h, 0x536958, 0.28);
-    this.add.rectangle(x, y, w, h, color).setStrokeStyle(5, 0xf5ead1);
-    this.add.rectangle(x, y + h / 2 - 18, 40, 34, 0x4b443a);
-    this.add.text(x, y - 12, title, { fontFamily: 'sans-serif', fontSize: '23px', fontStyle: 'bold', color: '#fff7db' }).setOrigin(0.5);
-    // Buildings have physics bodies; do not infer collision from illustrations.
-    const blocker = this.add.rectangle(x, y, w + 6, h + 6, 0xffffff, 0);
-    this.physics.add.existing(blocker, true);
-    this.blockers.add(blocker);
+  // ---------------------------------------------------------------------------
+  shutdown(): void {
+    this.fishing.destroy();
   }
 
-  private addDecoration(x: number, y: number, label: string): void {
-    this.add.text(x, y, label, { fontFamily: 'sans-serif', fontSize: '21px', color: '#fef9e8', backgroundColor: '#2c6371', padding: { x: 8, y: 5 } }).setOrigin(0.5);
+  // ---------------------------------------------------------------------------
+  // Private helpers
+  // ---------------------------------------------------------------------------
+
+  private handleInteract(): void {
+    // Fishing takes priority if active.
+    if (this.fishing.isActive) {
+      this.fishing.react();
+      return;
+    }
+
+    if (this.nearElias) {
+      const line = this.elias.nextDialogue();
+      this.hud.showDialogue(line, 4000);
+      return;
+    }
+
+    if (this.nearPond) {
+      this.hud.setPrompt(null);
+      this.fishing.startFishing();
+      return;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  private buildGround(worldWidth: number, worldHeight: number): void {
+    // Tile grass texture across the entire world.
+    const tileSize = 256; // asset grass-tile.png is 256×256
+    for (let gx = 0; gx < worldWidth; gx += tileSize) {
+      for (let gy = 0; gy < worldHeight; gy += tileSize) {
+        this.add.image(gx, gy, 'env-grass')
+          .setOrigin(0, 0)
+          .setDisplaySize(tileSize, tileSize)
+          .setDepth(DEPTH.GROUND);
+      }
+    }
+
+    // Tile dirt path strips on top of grass.
+    const pathTile = 128; // display each path tile at 128px
+    // Vertical road (north-south).
+    for (let py = 0; py < worldHeight; py += pathTile) {
+      this.add.image(340, py, 'env-path')
+        .setOrigin(0, 0)
+        .setDisplaySize(pathTile, pathTile)
+        .setDepth(DEPTH.GROUND_DECOR);
+    }
+    // Horizontal road (east-west).
+    for (let px = 0; px < worldWidth; px += pathTile) {
+      this.add.image(px, 430, 'env-path')
+        .setOrigin(0, 0)
+        .setDisplaySize(pathTile, pathTile)
+        .setDepth(DEPTH.GROUND_DECOR);
+    }
+  }
+
+  private buildEnvironment(): void {
+    // Cottage — placed so its footprint base sits at y=275
+    const cottageY = 275;
+    this.add.image(155, cottageY, 'env-cottage')
+      .setOrigin(0.5, 1)
+      .setDisplaySize(SPRITE_DISPLAY.cottage.w, SPRITE_DISPLAY.cottage.h)
+      .setDepth(DEPTH.OBJECTS + cottageY);
+
+    // Trees scattered around the village
+    const treePositions = [
+      { x: 80,  y: 340 },
+      { x: 530, y: 260 },
+      { x: 850, y: 350 },
+      { x: 1300, y: 540 },
+    ];
+    treePositions.forEach(({ x, y }) => {
+      this.add.image(x, y, 'env-tree')
+        .setOrigin(0.5, 1)
+        .setDisplaySize(SPRITE_DISPLAY.tree.w, SPRITE_DISPLAY.tree.h)
+        .setDepth(DEPTH.OBJECTS + y);
+    });
+
+    // Pond — base at pond bottom
+    this.add.image(POND.x, POND.y + SPRITE_DISPLAY.pond.h / 2, 'env-pond')
+      .setOrigin(0.5, 1)
+      .setDisplaySize(SPRITE_DISPLAY.pond.w, SPRITE_DISPLAY.pond.h)
+      .setDepth(DEPTH.GROUND_DECOR + 1); // ponds sit on the ground, below characters
+  }
+
+  private buildColliders(): void {
+    // Buildings
+    BUILDINGS.forEach(b => {
+      const blocker = this.add.rectangle(b.x, b.y, b.w + 6, b.h + 6, 0xffffff, 0);
+      this.physics.add.existing(blocker, true);
+      this.blockers.add(blocker);
+    });
+
+    // Pond perimeter (no-entry zone over water)
+    const pondBlocker = this.add.ellipse(POND.x, POND.y, POND.w - 60, POND.h - 60, 0xffffff, 0);
+    this.physics.add.existing(pondBlocker, true);
+    this.blockers.add(pondBlocker);
+
+    // Tree trunks (small circles at base — match positions in buildEnvironment)
+    [
+      { x: 80,  y: 340 },
+      { x: 530, y: 260 },
+      { x: 850, y: 350 },
+      { x: 1300, y: 540 },
+    ].forEach(({ x, y }) => {
+      const trunk = this.add.circle(x, y, 16, 0xffffff, 0);
+      this.physics.add.existing(trunk, true);
+      this.blockers.add(trunk);
+    });
   }
 }
