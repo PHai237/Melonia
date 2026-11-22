@@ -13,3 +13,4 @@ Each item must be marked `Approved`, `Proposed`, or `Rejected`. AI agents must n
 | D-007 | Proposed | NPC trade journeys and offline event-driven simulation | Needs design for time, fairness and persistence |
 | D-008 | Proposed | Future 2–4 player shared world | Need core game tested first |
 | D-009 | Proposed | Fishing as initial leisure minigame | Not a required long-term focus |
+| D-011 | Proposed | Modern pixel art as a possible replacement for the hand-painted production direction | Owner requested experimental preparation on feat/pixel-visual-slice; final style requires in-game review and separate approval, so D-001 is not superseded |

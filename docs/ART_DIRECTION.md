@@ -2,6 +2,8 @@
 
 **Status:** Approved direction (D-001). Implementation details in this doc are guidelines, not locked decisions.
 
+**Experimental branch note (2026-11-22):** The owner has requested preparation for a modern pixel-art style trial on `feat/pixel-visual-slice`. See [Pixel visual slice proposal and migration audit](PIXEL_VISUAL_SLICE.md). This document retains the hand-painted baseline; D-001 is not replaced by a final pixel-art production decision. Runtime assets and gameplay have not changed in this preparation task.
+
 ---
 
 ## 1. Visual Identity
