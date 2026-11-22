@@ -233,8 +233,8 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private buildColliders(): void {
-    // Buildings
-    BUILDINGS.forEach(b => {
+    // Only the Guild cottage is rendered in this slice (temporary title filter).
+    BUILDINGS.filter(b => b.title === 'Guild').forEach(b => {
       const blocker = this.add.rectangle(b.x, b.y, b.w + 6, b.h + 6, 0xffffff, 0);
       this.physics.add.existing(blocker, true);
       this.blockers.add(blocker);
