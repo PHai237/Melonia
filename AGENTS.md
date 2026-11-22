@@ -2,6 +2,8 @@
 
 Read this file first, then `docs/VISION.md`, `docs/DECISIONS.md`, and `docs/ROADMAP.md`.
 
+For file-based AI coordination, read [AI Hub](docs/ai-hub/AI_HUB.md) and [active task](docs/ai-hub/TASK.md). These provide context and handoff scope; they do not authorize starting a new task beyond the owner's current request.
+
 ## Product principles
 - Web-first cooperative fantasy life sandbox; single-player vertical slice first.
 - HD 2D / hand-painted anime visual target, **not pixel art**. Prototype shapes are placeholders, not approved art.
