@@ -84,8 +84,8 @@ export class Player {
   // -------------------------------------------------------------------------
   private playAnimation(moving: boolean): void {
     const key = moving
-      ? `walk-${this.facing === 'left' ? 'side' : this.facing}`
-      : `idle-${this.facing === 'left' ? 'side' : this.facing}`;
+      ? `walk-${this.facing === 'left' || this.facing === 'right' ? 'side' : this.facing}`
+      : `idle-${this.facing === 'left' || this.facing === 'right' ? 'side' : this.facing}`;
     this.sprite.anims.play(key, true);
   }
 
