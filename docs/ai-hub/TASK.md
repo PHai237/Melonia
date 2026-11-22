@@ -1,18 +1,24 @@
 # Active Task — PIXEL-CHAR-001
 
-**Status:** TODO
+**Status:** IN_PROGRESS
 
 **Branch:** `feat/pixel-visual-slice`
 
-**Objective:** Produce and visually validate **one** native-resolution pixel-art master of the *already approved* Melonia protagonist before generating any walk animation. Do not expand into 42 frames yet.
+**Objective:** Produce and visually validate **one pixel idle-down master** of the Melonia protagonist using the owner-selected design reference. Design-reference selection does not approve a production sprite. Do not generate walk animation or expand into 42 frames yet.
 
-**Dispatch:** Task content supplied by the starter bundle, retained as a pending task. AI Hub installation does not start artwork generation, re-run the sprite pipeline, or authorize production integration. Owner assignment is required before the next action.
+**Dispatch:** Owner explicitly started PIXEL-CHAR-001 on branch `feat/pixel-visual-slice`, base `e910973`, and subsequently authorized commit/push of the seven agreed Reference Gate files after matching the original-image checksum and passing checks. No sprite generation, gameplay edits, reset/clean or unrelated WIP publication. Stop after the authorized Reference Gate push.
 
-**Reference gate:** `references/protagonist-turnaround.png` is not installed yet. A Gemini turnaround candidate exists locally, but its approval/identity must be confirmed; see [reference provenance](references/README.md). The bundle's phrase “already approved” is an intent/requirement, not proof that a particular local file is approved.
+**Reference gate:** [protagonist-turnaround.png](references/protagonist-turnaround.png) is installed unchanged from the Gemini image matching the owner's Front/Back/Right-facing Side selection. See [provenance and checksum](references/README.md). It is a design reference only; no sprite production approval is granted.
+
+**Locked reference identity:** original PNG 2048×1273, 4,311,155 bytes; SHA256 `1c3ea16ae7d4c10681ff20ebf50af4c983ef90cbf9cb092d252054c705e41270`. The earlier different-sized variant failed this gate and is not accepted as the reference.
 
 ## Design reference
 
-Owner-approved turnaround: front/down, back/up, right-facing side. Codex should copy the approved PNG reference into `docs/ai-hub/references/protagonist-turnaround.png`, and optionally village concept into `docs/ai-hub/references/village-concept.png`, **with provenance notes**. Do not substitute prior v0/v1 character. Identifiers: tousled brown hair with a low ponytail, indigo eyes, muted teal open coat, cream undershirt, diagonal leather strap and satchel, dark trousers, brown boots.
+Owner-selected turnaround: front/down, back/up, right-facing side, stored in `docs/ai-hub/references/protagonist-turnaround.png`. Do not substitute a prior v0/v1 character, single-view crop or village concept. Identifiers: tousled brown hair with a low ponytail, indigo eyes, muted teal open coat, cream undershirt, diagonal leather strap and satchel, dark trousers, brown boots. This large three-view image is not a native sprite sheet and must not be sliced or automatically shrunk into production sprites.
+
+## Next output — one pixel idle-down master
+
+The next artwork deliverable is exactly one native 48×64 transparent RGBA `idle-down-0.png`, with its palette/provenance and measured QA, reviewed in the isolated preview at ×2 with pivot (24,60). Keep it in a review/experimental location until owner acceptance. No other directions, walk poses, in-betweens or duplicated frames at this stage. Existing Master v2 remains an unapproved trial; task activation does not accept it. The current activation request does not create this next artwork deliverable.
 
 ## Trial technical contract — not production lock
 

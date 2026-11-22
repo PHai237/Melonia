@@ -1,4 +1,20 @@
-# AI Hub setup review
+# AI Hub review
+
+## Current — PIXEL-CHAR-001 activation
+
+**Status:** Reference Gate publication authorized after successful checks; overall PIXEL-CHAR-001 IN_PROGRESS following owner dispatch from base e910973. No production sprite approval.
+
+Selected the Gemini Front/Back/Right-facing Side turnaround matching brown low ponytail, teal coat and diagonal satchel. Copied it unchanged to `references/protagonist-turnaround.png`; source path, dimensions and SHA256 are recorded in `references/README.md`. Owner selection is a design-reference selection only, not production sprite or final style approval.
+
+Corrected the reference after the owner identified a checksum mismatch: the accepted original download is 2048×1273, 4,311,155 bytes, SHA256 `1c3ea16ae7d4c10681ff20ebf50af4c983ef90cbf9cb092d252054c705e41270`. Get-FileHash matched before use and again after a byte-preserving copy. The previously installed different-sized variant is not the locked reference. No conversion or new artwork was created.
+
+Updated TASK.md for one next pixel idle-down master, AI_HUB.md index, Codex handoff and AGENTS.md branch-specific Modern Fantasy Pixel Art exception. D-001 and the proposed final style status remain unchanged. No artwork was generated; no gameplay, renderer, pipeline, production manifest or existing trial assets were edited. Owner authorized commit/push of exactly these seven files with message `docs: activate pixel character task and lock reference`. Preserve all unrelated WIP, including the nine production player PNG deletions already present at this correction step; do not stage or repair them here.
+
+Prior activation checks: build and diff check passed, but owner checksum review correctly stopped publication of the mismatched reference. Correction publication requires fresh staged-diff check and build. Scope remains exactly six text files plus the corrected reference PNG. No runtime/artwork validation is claimed; existing uncommitted gameplay asset deletions can still affect the local demo even if the bundler succeeds.
+
+Correction checks completed: staged scope is exactly the seven authorized files; staged PNG is 4,311,155 bytes and hashes to the owner-supplied SHA256. `git diff --cached --check`, `npm run build` and `git diff --check` all exit 0; build reports the existing chunk >500 kB warning. Commit/push of this checked scope is explicitly authorized by the owner. No unrelated WIP is staged.
+
+## Historical — Hub setup/publication
 
 **Status:** Owner approved Hub publication — setup only; no art approval or next task execution.
 

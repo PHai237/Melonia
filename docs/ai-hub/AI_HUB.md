@@ -35,9 +35,9 @@
 
 ## Hub index
 
-- [Active task](TASK.md): PIXEL-CHAR-001, still TODO until the owner starts/assigns the next action.
-- [Handoff template](HANDOFF_TEMPLATE.md) and [handoff lanes](handoffs/README.md): `gemini.md`, `claude.md`, `codex.md`. Initial files are empty deliverable placeholders, not completed work.
-- [References and provenance](references/README.md): approved turnaround is pending identification/owner confirmation; do not improvise one.
+- [Active task](TASK.md): PIXEL-CHAR-001 is IN_PROGRESS following owner dispatch; the current step activates the task and installs its selected design reference. Next artwork output is one idle-down master, not animation frames.
+- [Handoff template](HANDOFF_TEMPLATE.md) and [handoff lanes](handoffs/README.md): `gemini.md`, `claude.md`, `codex.md`. Codex records task activation; Gemini/Claude lanes still await their own submissions.
+- [References and provenance](references/README.md): selected Gemini front/back/right-side turnaround is installed unchanged as a design reference, not an approved production sprite.
 - [Review](REVIEW.md): setup evidence and outstanding approvals; distinguish setup readiness from art acceptance.
 - [GitHub sync](GITHUB_SYNC.md): manual review, explicit path staging and branch verification, no automatic sync.
 

@@ -7,6 +7,7 @@ For file-based AI coordination, read [AI Hub](docs/ai-hub/AI_HUB.md) and [active
 ## Product principles
 - Web-first cooperative fantasy life sandbox; single-player vertical slice first.
 - HD 2D / hand-painted anime visual target, **not pixel art**. Prototype shapes are placeholders, not approved art.
+- Branch exception authorized by the owner: `feat/pixel-visual-slice` may experiment with **Modern Fantasy Pixel Art**. This is a trial, not a production style lock; D-001 remains the baseline and is not superseded. A selected design reference does not approve a production sprite.
 - Player agency, peaceful activities, living NPCs, and exploration. No mandatory PvP, pay-to-win or forced daily grind.
 - Player should be able to enjoy a session without gaining XP or clearing a dungeon.
 - A world clock and NPC schedules are important, but exact day length is **not decided** (150 minutes is experimental only).
